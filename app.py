@@ -6,7 +6,8 @@ import pandas as pd
 import plotly
 import plotly.express as px
 import json
-
+import pickle
+import numpy as np
 
 # Create Flask's `app` object
 app = Flask(
@@ -44,20 +45,35 @@ def forecastplot(city,sdate,edate) :
     df = df.loc[mask]
     print(df['max'])
     dfmax = pd.read_csv('static/csv/tempmax.csv')
-    dfmin = pd.read_csv('static/csv/tempmin.csv')
-    dfspd = pd.read_csv('static/csv/speed.csv')
+    #dfmin = pd.read_csv('static/csv/tempmin.csv')
+    #dfspd = pd.read_csv('static/csv/speed.csv')
+    max = pickle.load(open('static/csv/max_forecast','rb'))
+    max = max.ravel()
+    max = max.tolist()
+    print(len(max))
+    min = pickle.load(open('static/csv/min_forecast','rb'))
+    min = min.ravel()
+    min = min.tolist()
+    print(len(min))
+    mxspd = pickle.load(open('static/csv/spd_forecast','rb'))
+    mxspd = mxspd.ravel()
+    mxspd = mxspd.tolist()
+    print(len(mxspd))
     dfmax['date'] = pd.to_datetime(dfmax['date'])
     mask1 = (dfmax['date'] >= sdate)
     dfmax = dfmax.loc[mask1]
-    dfmin['date'] = pd.to_datetime(dfmin['date'])
+    '''dfmin['date'] = pd.to_datetime(dfmin['date'])
     mask2 = (dfmin['date'] >= sdate)
     dfmin = dfmin.loc[mask2] 
     dfspd['date'] = pd.to_datetime(dfspd['date'])
     mask3 = (dfspd['date'] >= sdate)
-    dfspd = dfspd.loc[mask3]       
-    data = [dfmax['date'],df['max'],df['min'],df['mxspd'],dfmax['max'],dfmin['min'],dfspd['mxspd']]
-    headers = ["date","Maximum Temp","Minimum Temp","WindSpeed","Forecasted Max Temp","Forecasted Min Temp","Forecasted WindSpeed"]
-    finaldf = pd.concat(data, axis=1, keys=headers)
+    dfspd = dfspd.loc[mask3]'''  
+    date = dfmax['date'].tolist()
+    #data = [dfmax['date'],df['max'],df['min'],df['mxspd'],dfmax['max'],dfmin['min'],dfspd['mxspd']]
+    #headers = ["date","Maximum Temp","Minimum Temp","WindSpeed","Forecasted Max Temp","Forecasted Min Temp","Forecasted WindSpeed"]
+    data = {"date" :date, "Forecasted Max Temp" : max,"Forecasted Min Temp" : min,"Forecasted WindSpeed" : mxspd}
+    #finaldf = pd.concat(data, axis=1, keys=headers)
+    finaldf = pd.DataFrame(data)
     print(finaldf.head())
     temperature = px.line(df, x="date", y='max',)
     maxspeed = px.line(df, x = 'date', y ='min', )
